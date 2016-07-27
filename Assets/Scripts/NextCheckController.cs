@@ -23,7 +23,10 @@ public class NextCheckController : MonoBehaviour {
 
             destroyFirstPiece ();
         }
-    }
+	}
+	private float getDepth(){
+		return LAST_PIECE_OBJECT.GetComponent<Collider>().bounds.size.z - 1;
+	}
 
     void addNewPiece (){
         string sValue = getRandomPiece ();
@@ -32,7 +35,8 @@ public class NextCheckController : MonoBehaviour {
         //TODO: Change depending on last piece value.
         GameObject newFloor = Instantiate (validPrefab);
 
-        float offset = 90f;
+		float offset = getDepth();
+
         //Reubicate the new piece in front of the last piece.
         newFloor.transform.position = new Vector3(LAST_PIECE_OBJECT.transform.position.x, LAST_PIECE_OBJECT.transform.position.y, LAST_PIECE_OBJECT.transform.position.z + offset);
         newFloor.name = "Piece" +(++piecesCounter);
