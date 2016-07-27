@@ -2,15 +2,22 @@ using UnityEngine;
 using System.Collections;
 
 public class PlayerController : MonoBehaviour {
-    public float xSpeed, movSpeed;
+    public float xSpee;
+	public static float movSpeed = 30f;
     Rigidbody rb;
+	public static Vector3 velocity = new Vector3 (0f, 0.0f, movSpeed);
+	public static void rotateRight(){
+		GameObject player = GameObject.Find ("Player");
+		velocity = new Vector3 (movSpeed, 0.0f, 0f);
+		player.transform.RotateAround(player.transform.position, new Vector3(0, 1, 0), 90);
+	}
     // Use this for initialization
     void Start () {
         rb = GetComponent<Rigidbody> ();
-        rb.velocity =  new Vector3 (0f, 0.0f, movSpeed);
-    }
-    void FixedUpdate(){
-        rb.velocity =  new Vector3 (0f, rb.velocity.y, movSpeed);
+		rb.velocity =  velocity;
+	}
+	void FixedUpdate(){
+		rb.velocity =  velocity;
     }
     float currentPosition = 0;
 
@@ -23,20 +30,15 @@ public class PlayerController : MonoBehaviour {
     float timeBetweenRepeatedMovements = 1f;
     // Update is called once per frame
     void Update () {
-        //if WINDOWS
-        // float horizontalAxis = Input.GetAxis ("Horizontal");
-        // bool buttonHorizontal = Input.GetButtonDown ("Horizontal");
-        //If Android-iPhone
-        if(Time.time > delayBetweenMovements){
+		if(Time.time > delayBetweenMovements){
+			//if WINDOWS
+//			float horizontalAxis = Input.GetAxis ("Horizontal");
+//			bool buttonHorizontal = Input.GetButtonDown ("Horizontal");
+			//If Android-iPhone
 			float horizontalAxis = Input.acceleration.x;
 			bool buttonHorizontal = Mathf.Abs (horizontalAxis) > hAccValue;
 			if (buttonHorizontal) {
 				print ("- Horizontal Axis " + horizontalAxis);
-//                if(Mathf.Abs(horizontalAxis) > 1){
-//                    horizontalAxis += horizontalAxis > 0 ? -1:1;
-//				}
-//				print ("- - " + horizontalAxis);
-                
 				Movements actualMovement = Movements.NONE;
 				float diff = 0;
 				if (horizontalAxis < hAccValue && currentPosition >= 0) {

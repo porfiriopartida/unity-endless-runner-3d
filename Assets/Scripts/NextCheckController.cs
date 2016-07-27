@@ -4,10 +4,11 @@ using System.Collections;
 public class NextCheckController : MonoBehaviour {
     public static string LAST_PIECE = "FRONT";
     public static GameObject toBeDestroyed = null;
-    public GameObject validPrefab;
-    public static GameObject LAST_PIECE_OBJECT;
+	public GameObject m_frontPrefab, m_leftPrefab;
+	public static GameObject LAST_PIECE_OBJECT;
     public static int piecesCounter = 0;
-    private GameObject piecesWrapper;
+
+    GameObject piecesWrapper;
 
     void Start(){
         if (LAST_PIECE_OBJECT == null) {
@@ -25,27 +26,62 @@ public class NextCheckController : MonoBehaviour {
         }
 	}
 	private float getDepth(){
-		return LAST_PIECE_OBJECT.GetComponent<Collider>().bounds.size.z - 1;
+		Collider collider = LAST_PIECE_OBJECT.GetComponent<Collider>();
+		if(collider == null){
+			collider = LAST_PIECE_OBJECT.GetComponentInChildren<Collider>();
+		}
+		switch(LAST_PIECE){
+			case "RIGHT":
+				return collider.bounds.size.x;
+			case "FRONT":
+				return collider.bounds.size.z - 1;
+			default:
+				throw new UnityException("Invalid piece called.");
+		}
 	}
 
+	GameObject getNewPiece(string sValue){
+		switch(sValue){
+			case "RIGHT":
+				return Instantiate (m_leftPrefab);
+			case "FRONT":
+				return Instantiate (m_frontPrefab);
+			default:
+				throw new UnityException("Invalid piece called.");
+		}
+	}
     void addNewPiece (){
-        string sValue = getRandomPiece ();
-        LAST_PIECE = sValue;
+		string sValue = getRandomPiece ();
+		print (sValue);
+		
+		//TODO: Change depending on last piece value.
+		GameObject newFloor = getNewPiece(sValue);
 
-        //TODO: Change depending on last piece value.
-        GameObject newFloor = Instantiate (validPrefab);
-
-		float offset = getDepth();
-
-        //Reubicate the new piece in front of the last piece.
-        newFloor.transform.position = new Vector3(LAST_PIECE_OBJECT.transform.position.x, LAST_PIECE_OBJECT.transform.position.y, LAST_PIECE_OBJECT.transform.position.z + offset);
-        newFloor.name = "Piece" +(++piecesCounter);
-        newFloor.transform.parent = piecesWrapper.transform;
+		repositionNewFloor(newFloor);
         //LAST_PIECE_OBJECT.name = "NotLast";
-        //New last piece added.
-        LAST_PIECE_OBJECT = newFloor;
+		//New last piece added.
+		LAST_PIECE = sValue;
+		LAST_PIECE_OBJECT = newFloor;
     }
-    void destroyFirstPiece(){
+	void repositionNewFloor(GameObject newFloor){
+		float offset = getDepth();
+		//Reubicate the new piece in front of the last piece.
+		Vector3 newPosition;
+		switch(LAST_PIECE){
+			case "RIGHT":
+				newPosition = new Vector3(LAST_PIECE_OBJECT.transform.position.x + offset, LAST_PIECE_OBJECT.transform.position.y, LAST_PIECE_OBJECT.transform.position.z);
+				break;
+			case "FRONT":
+				newPosition = new Vector3(LAST_PIECE_OBJECT.transform.position.x, LAST_PIECE_OBJECT.transform.position.y, LAST_PIECE_OBJECT.transform.position.z + offset);
+				break;
+			default:
+				throw new UnityException("Invalid piece called.");
+		}
+		newFloor.transform.position = newPosition;
+		newFloor.name = "Piece" +(++piecesCounter);
+		newFloor.transform.parent = piecesWrapper.transform;
+	}
+	void destroyFirstPiece(){
         if (toBeDestroyed != null) {
             Destroy (toBeDestroyed);
             toBeDestroyed = null;
@@ -57,17 +93,17 @@ public class NextCheckController : MonoBehaviour {
         int value = Mathf.RoundToInt(Random.value * 2);
         string sValue;
         switch(value){
+//            case 1:
+//                sValue = "LEFT";
+//                break;
             case 1:
-                sValue = "LEFT";
-                break;
-            case 2:
                 sValue = "RIGHT";
                 break;
-            case 0:
             default:
                 sValue = "FRONT";
                 break;
-        }
-        return sValue;
-    }
+		}
+		sValue = "RIGHT";
+		return sValue;
+	}
 }

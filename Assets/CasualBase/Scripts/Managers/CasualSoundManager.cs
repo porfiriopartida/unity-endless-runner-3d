@@ -43,7 +43,7 @@ public class CasualSoundManager {
 		m_songsAudioClipList.Add (MUSIC.GAME_OVER, audioClipList [1]);
 
 		//immediatly plays background song
-		this.playSong (MUSIC.BACKGROUND);
+//		this.playSong (MUSIC.BACKGROUND);
 	}
 
 
