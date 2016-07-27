@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class TurnController : MonoBehaviour {
-	public bool right = true;
+	public bool right;
 	GameObject piecesWrapper;
 	// Use this for initialization
 	void Start () {
@@ -12,7 +12,12 @@ public class TurnController : MonoBehaviour {
 //		Transform transform = piecesWrapper.transform;
 		//		transform.RotateAround (collider.transform.position, new Vector3(0, 1, 0), -90);
 //		collider.transform.RotateAround (collider.transform.position, new Vector3(0, 1, 0), 90);
-		PlayerController.rotateRight();
+        if (right) {
+            PlayerController.rotateRight ();
+        } else {
+            PlayerController.rotateLeft ();
+        }
+        gameObject.SetActive (false);
 //		transform.position = transform.position + new Vector3(10, 0, 0);
 	}
 }

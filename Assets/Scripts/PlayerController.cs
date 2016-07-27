@@ -2,15 +2,59 @@ using UnityEngine;
 using System.Collections;
 
 public class PlayerController : MonoBehaviour {
-    public float xSpee;
-	public static float movSpeed = 30f;
+	public static float movSpeed = 40f;
     Rigidbody rb;
-	public static Vector3 velocity = new Vector3 (0f, 0.0f, movSpeed);
-	public static void rotateRight(){
-		GameObject player = GameObject.Find ("Player");
-		velocity = new Vector3 (movSpeed, 0.0f, 0f);
-		player.transform.RotateAround(player.transform.position, new Vector3(0, 1, 0), 90);
-	}
+    public static Vector3 velocity = new Vector3 (0f, 0.0f, movSpeed);
+    public static void rotateRight(){
+        rotate (true);
+    }
+    public static void rotateLeft(){
+        rotate (false);
+    }
+    private static void rotate(bool right){
+        GameObject player = GameObject.Find ("Player");
+        GameObject camera = GameObject.Find ("Main Camera");
+        FollowCameraController cameraController = camera.GetComponent<FollowCameraController> ();
+
+        //velocity = new Vector3 (movSpeed, 0.0f, 0f);
+        if (right) {
+            if(velocity.x > 0){
+                //Traveling through +X. Turning to the Right. -Z
+                velocity = new Vector3 (0f, 0f, -movSpeed);
+            } else if (velocity.z > 0){
+                //Traveling through +Z. Turning to the Right. +X
+                velocity = new Vector3 (+movSpeed, 0f, 0f);
+            } else if(velocity.x < 0){
+                //Traveling through -X. Turning to the Right. +Z
+                velocity = new Vector3 (0f, 0f, movSpeed);
+            }else if(velocity.z < 0){
+                //Traveling through -X. Turning to the Right. +Z
+                velocity = new Vector3 (-movSpeed, 0f, 0f);
+            }
+            //TODO: Travel through Y ?
+        } else {
+            if(velocity.x > 0){
+                //Traveling through +X. Turning to the LEFT. -Z
+                velocity = new Vector3 (0f, 0f, +movSpeed);
+            } else if (velocity.z > 0){
+                //Traveling through +Z. Turning to the LEFT. +X
+                velocity = new Vector3 (-movSpeed, 0f, 0f);
+            } else if(velocity.x < 0){
+                //Traveling through -X. Turning to the LEFT. +Z
+                velocity = new Vector3 (0f, 0f, -movSpeed);
+            }else if(velocity.z < 0){
+                //Traveling through -X. Turning to the LEFT. +Z
+                velocity = new Vector3 (+movSpeed, 0f, 0f);
+            }
+            //TODO: Travel through Y ?
+        }
+
+        float angle = (right ? 90 : -90);
+
+        //player.transform.RotateAround(player.transform.position, new Vector3(0, 1, 0), angle);
+        cameraController.buildOffset(velocity);
+        player.transform.Rotate (new Vector3(0, angle, 0));
+    }
     // Use this for initialization
     void Start () {
         rb = GetComponent<Rigidbody> ();
