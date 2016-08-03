@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour {
         FollowCameraController cameraController = camera.GetComponent<FollowCameraController> ();
 
         //velocity = new Vector3 (movSpeed, 0.0f, 0f);
-        if (right) {
+		if (right) {
             if(m_velocity.x > 0){
                 //Traveling through +X. Turning to the Right. -Z
                 m_velocity = new Vector3 (0f, 0f, -m_movSpeed);
@@ -43,7 +43,7 @@ public class PlayerController : MonoBehaviour {
                 m_velocity = new Vector3 (-m_movSpeed, 0f, 0f);
             }
             //TODO: Travel through Y ?
-        } else {
+		} else {
             if(m_velocity.x > 0){
                 //Traveling through +X. Turning to the LEFT. -Z
                 m_velocity = new Vector3 (0f, 0f, +m_movSpeed);
@@ -73,6 +73,15 @@ public class PlayerController : MonoBehaviour {
         m_velocity = new Vector3 (0f, 0.0f, m_movSpeed);
         rb.AddForce(m_velocity);
     }
+	void OnCollisionEnter(Collision collision){
+		DebugScript.self.addText("COLLISION: " + collision.transform.tag);
+		if(collision.transform.tag == "PIECE"){
+			Collider collider = collision.transform.GetComponent<Collider>();
+			float x = collider.bounds.size.x;
+			float y = collider.bounds.size.y;
+			DebugScript.self.addText("Size: ("+x+", "+y+")");
+		}
+	}
 //    void FixedUpdate(){
 //        rb.velocity =  velocity;
 //    }
@@ -96,10 +105,12 @@ public class PlayerController : MonoBehaviour {
 					//To the left
 					actualMovement = Movements.LEFT;
 					diff = -10f;
+					DebugScript.self.addText("MOVE_LEFT");
 				} else if (horizontalAxis > hAccValue && currentPosition <= 0) {
 					//To the right
 					actualMovement = Movements.RIGHT;
 					diff = +10f;
+					DebugScript.self.addText("MOVE_RIGHT");
 				}
 				//Using delay
 				if(actualMovement != lastMovement || Time.time >= delayRepeatedMovements && actualMovement == lastMovement){

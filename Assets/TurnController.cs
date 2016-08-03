@@ -16,8 +16,10 @@ public class TurnController : MonoBehaviour {
 //		collider.transform.RotateAround (collider.transform.position, new Vector3(0, 1, 0), 90);
         if (right) {
             player.RotateRight ();
+			DebugScript.self.addText("ROTATE_RIGHT");
         } else {
 			player.RotateLeft ();
+			DebugScript.self.addText("ROTATE_LEFT");
         }
         gameObject.SetActive (false);
 //		transform.position = transform.position + new Vector3(10, 0, 0);
