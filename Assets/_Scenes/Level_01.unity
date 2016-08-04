@@ -221,6 +221,10 @@ Prefab:
       propertyPath: m_TagString
       value: PIECE
       objectReference: {fileID: 0}
+    - target: {fileID: 432100, guid: c9db46ec8757b67469c258b696056bff, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 1.83
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: c9db46ec8757b67469c258b696056bff, type: 2}
   m_IsPrefabParent: 0
@@ -582,7 +586,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 431218, guid: a6534ca01c7a5da46801e77186debfdb, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 10.559381
+      value: 184
       objectReference: {fileID: 0}
     - target: {fileID: 431218, guid: a6534ca01c7a5da46801e77186debfdb, type: 2}
       propertyPath: m_LocalRotation.x
@@ -610,11 +614,15 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11427070, guid: a6534ca01c7a5da46801e77186debfdb, type: 2}
       propertyPath: m_movSpeed
-      value: 3000
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 13582172, guid: a6534ca01c7a5da46801e77186debfdb, type: 2}
       propertyPath: m_Radius
       value: 1699.6226
+      objectReference: {fileID: 0}
+    - target: {fileID: 5430216, guid: a6534ca01c7a5da46801e77186debfdb, type: 2}
+      propertyPath: m_Constraints
+      value: 116
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: a6534ca01c7a5da46801e77186debfdb, type: 2}

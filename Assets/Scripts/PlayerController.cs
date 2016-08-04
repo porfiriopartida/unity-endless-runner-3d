@@ -3,18 +3,19 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
     public float m_movSpeed;
-    Rigidbody rb;
+	private Rigidbody rb;
     private Vector3 m_velocity;
     
-    float currentPosition = 0;
+	private float currentPosition = 0;
     
-    float hAccValue = 0.3f; //if windows = 0.
-    enum Movements { LEFT, RIGHT, NONE};
+	private float hAccValue = 0.3f; //if windows = 0.
+	private enum Movements { LEFT, RIGHT, NONE};
     private Movements lastMovement = Movements.NONE;
-    float delayRepeatedMovements;
-    float delayBetweenMovements;
-    float timeBetweenMovements = 0.5f;
-    float timeBetweenRepeatedMovements = 1f;
+	private float delayRepeatedMovements;
+	private float delayBetweenMovements;
+	private float timeBetweenMovements = 0.5f;
+	private float timeBetweenRepeatedMovements = 1f;
+	private bool movingVertical = true;
 
     public void RotateRight(){
         rotate (true);
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour {
         rotate (false);
     }
     private void rotate(bool right){
+		movingVertical = !movingVertical;
         GameObject player = GameObject.Find ("Player");
         GameObject camera = GameObject.Find ("Main Camera");
         FollowCameraController cameraController = camera.GetComponent<FollowCameraController> ();
@@ -66,27 +68,61 @@ public class PlayerController : MonoBehaviour {
         player.transform.Rotate (new Vector3(0, angle, 0));
         rb.velocity =  new Vector3(0,0,0);
         rb.AddForce(m_velocity);
+		recenter();
     }
     // Use this for initialization
     void Start () {
         rb = GetComponent<Rigidbody> ();
         m_velocity = new Vector3 (0f, 0.0f, m_movSpeed);
         rb.AddForce(m_velocity);
-    }
+	}
+	Transform lastPiece;
+
+	private void recenter(){
+		if(lastPiece == null){
+			return;
+		}
+
+
+		Collider lastPieceCollider = lastPiece.GetComponent<Collider>();
+//		lastPiece.gameObject.SetActive(false);
+		float sizeX = lastPieceCollider.bounds.size.x;
+		float sizeY = lastPieceCollider.bounds.size.y;
+		float sizeZ = lastPieceCollider.bounds.size.z;
+
+//		float diffX = sizeX / 4;
+
+		Vector3 position = lastPiece.position - new Vector3(sizeX/2, 0, 0);
+		float positionX = (position.x);
+
+		transform.position = new Vector3(positionX, transform.position.y, transform.position.z);
+		
+		//TODO: This is just for X
+		if(movingVertical){
+//			float positionX = position.x;
+//			transform.position = new Vector3(positionX, transform.position.y, transform.position.z);
+		} else { //Moving Horizontal
+//			position = lastPiece.position - new Vector3( sizeX/2, sizeY, sizeZ/2);
+//			float positionZ = position.z;
+//			transform.position = new Vector3(transform.position.x, transform.position.y, positionZ);
+		}
+		string positionStr = position.ToString();
+		DebugScript.self.addText("Size: (" + sizeX + ", "+sizeY+", "+sizeZ+") " + positionStr);
+
+	}
 	void OnCollisionEnter(Collision collision){
 		DebugScript.self.addText("COLLISION: " + collision.transform.tag);
 		if(collision.transform.tag == "PIECE"){
-			Collider collider = collision.transform.GetComponent<Collider>();
-			float x = collider.bounds.size.x;
-			float y = collider.bounds.size.y;
-			DebugScript.self.addText("Size: ("+x+", "+y+")");
+			lastPiece = collision.transform;
+			recenter();
 		}
 	}
 //    void FixedUpdate(){
 //        rb.velocity =  velocity;
 //    }
     // Update is called once per frame
-    void Update () {
+	void Update () {
+		recenter ();
         if(Time.time > delayBetweenMovements){
             //if WINDOWS
             //If Android-iPhone
@@ -118,7 +154,9 @@ public class PlayerController : MonoBehaviour {
 					//					transform.Translate(currentPosition * Time.smoothDeltaTime, 0, 0);
 //					transform.Translate(-Vector3.right * diff * Time.deltaTime);
 //					transform.position = new Vector3 (currentPosition, transform.position.y, transform.position.z);
+
 					transform.position = transform.position + Vector3.right * diff;
+					currentPosition = 0; //TODO remove this line.
 					delayRepeatedMovements = Time.time + timeBetweenRepeatedMovements;
 					delayBetweenMovements = Time.time + timeBetweenMovements;
 					lastMovement = actualMovement;
