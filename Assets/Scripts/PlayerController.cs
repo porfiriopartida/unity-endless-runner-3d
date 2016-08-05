@@ -6,6 +6,10 @@ public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private Vector3 m_velocity;
 	public Transform lastPiece;
+	public GameObject [] piecesPool;
+	public GameObject nextPiece;
+	GameObject piecesBucket;
+
     
 	private float hAccValue = 0.3f; //if windows = 0.
 	private enum Movements { LEFT, RIGHT, NONE};
@@ -17,13 +21,15 @@ public class PlayerController : MonoBehaviour {
 	public bool movingVertical;
 	public float centerFactor;
 	public float step  = 10f;
+	public int pieces = 0;
+	private const int FRONT = 0, RIGHT = 1, BACK = 2, LEFT = 3;
+	public int facing = 0; //starts facing forward +Z
     public void RotateRight(){
         rotate (true);
     }
     public void RotateLeft(){
         rotate (false);
-    }
-	public int facing = 0; //starts facing forward +Z
+	}
     private void rotate(bool right){
 		movingVertical = !movingVertical;
         GameObject player = GameObject.Find ("Player");
@@ -70,19 +76,20 @@ public class PlayerController : MonoBehaviour {
 		facing = Mathf.Abs( facing % 4); // 1 = 5 = 7 = Going right
 
         float angle = (right ? 90 : -90);
-        //player.transform.RotateAround(player.transform.position, new Vector3(0, 1, 0), angle);
         cameraController.buildOffset(m_velocity);
         player.transform.Rotate (new Vector3(0, angle, 0));
         rb.velocity =  new Vector3(0,0,0);
         rb.AddForce(m_velocity);
 		recenter();
 	}
-	private const int FRONT = 0, RIGHT = 1, BACK = 2, LEFT = 3;
     // Use this for initialization
     void Start () {
         rb = GetComponent<Rigidbody> ();
         m_velocity = new Vector3 (0f, 0.0f, m_movSpeed);
         rb.AddForce(m_velocity);
+	}
+	void Awake(){
+		piecesBucket = GameObject.Find("Pieces");
 	}
 
 	public void recenter(){
@@ -90,61 +97,49 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 
-
 		Collider lastPieceCollider = lastPiece.GetComponent<Collider>();
-//		lastPiece.gameObject.SetActive(false);
-//		float sizeX = lastPieceCollider.bounds.size.x;
-//		float sizeY = lastPieceCollider.bounds.size.y;
-//		float sizeZ = lastPieceCollider.bounds.size.z;
-
-//		float diffX = sizeX / 4;
 		Transform center = lastPiece.transform.Find ("center");
-
-//		transform.position = new Vector3(positionX, transform.position.y, transform.position.z);
 		Vector3 position = center.position;
-		//TODO: This is just for X
 		if(movingVertical){
-//			position= lastPiece.position - new Vector3(sizeX * centerFactor, 0, 0);
 			float positionX = position.x + (centerFactor * ( facing == PlayerController.FRONT ? 1:-1 )) ;
-//			float positionX = (position.x)/2;
 			transform.position = new Vector3(positionX , transform.position.y, transform.position.z);
 		} else { //Moving Horizontal
-//			position = lastPiece.position - new Vector3(0, 0, sizeZ * centerFactor);
-//			position = lastPiece.position - new Vector3( sizeX/2, sizeY, sizeZ/2);
 			float positionZ = position.z + (centerFactor * ( facing == PlayerController.LEFT ? 1:-1 )) ;
 			transform.position = new Vector3(transform.position.x, transform.position.y, positionZ);
 		}
-//		string positionStr = position.ToString();
-//		DebugScript.self.addText("Size: (" + sizeX + ", "+sizeY+", "+sizeZ+") " + positionStr);
-
 	}
-	public int pieces = 0;
 	void OnTriggerEnter(Collider collider){
 		DebugScript.self.addText("COLLISION: " + collider.transform.tag);
 		if(collider.transform.tag == "PIECE"){
-			if(lastPiece != null){
+			collider.enabled = false; //Prevent recollide.
 
-				Destroy (lastPiece.gameObject);
-			}
-			lastPiece = collider.transform;
-			collider.enabled = false;
-//			lastPiece.gameObject.SetActive(false);
 			pieces++;
 			if(pieces < 2){
 				recenter (); //Recenter in the first w/o turn.
 			}
+
+			//Destroy the last touched piece.
+			if(lastPiece != null){
+				Destroy (lastPiece.gameObject);
+			}
+			//New last touched piece.
+			lastPiece = collider.transform;
+
+			//The farest piece is where we need to put a new object
+			//New object (randomly) created from the pool.
+			GameObject newPiece = GameObject.Instantiate(piecesPool[0]); //TODO: Ramdomize
+			if(piecesBucket != null){
+				newPiece.transform.parent = piecesBucket.transform;
+			}
+			//Repositioning the new piece
+			float sizeZ = nextPiece.GetComponent<Collider>().bounds.size.z;
+			newPiece.transform.position = nextPiece.transform.position + new Vector3(0, 0, sizeZ); //TODO: More than just forward
+			//Newest piece is now the farest.
+			nextPiece = newPiece;
 		}
 	}
-//    void FixedUpdate(){
-//        rb.velocity =  velocity;
-//    }
     // Update is called once per frame
 	void Update () {
-//		recenter();
-//		if(pieces >3 ) {
-//			recenter();
-//			rb.velocity = new Vector3(0,0,0);
-//		}
         if(Time.time > delayBetweenMovements){
             //if WINDOWS
             //If Android-iPhone
