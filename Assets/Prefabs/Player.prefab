@@ -32,7 +32,7 @@ GameObject:
   - 135: {fileID: 13582172}
   m_Layer: 0
   m_Name: chamaleon1
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -44,7 +44,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 195218}
   m_LocalRotation: {x: -0.048286952, y: 0, z: 0, w: 0.99883354}
-  m_LocalPosition: {x: 0, y: -6.87, z: 10.559381}
+  m_LocalPosition: {x: -0.53, y: -6.926065, z: 455}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: -5.5354, y: 0, z: 0}
   m_Children:
@@ -111,7 +111,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 116
   m_CollisionDetection: 0
 --- !u!95 &9515778
 Animator:
@@ -158,6 +158,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f8aca26df401491fb89646c5e316348, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_movSpeed: 0
+  movingVertical: 1
+  centerFactor: 0
 --- !u!135 &13582172
 SphereCollider:
   m_ObjectHideFlags: 1
@@ -168,7 +171,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 2393.141
+  m_Radius: 1692.2731
   m_Center: {x: 196.82074, y: 2040.593, z: 2229.9724}
 --- !u!1001 &100100000
 Prefab:

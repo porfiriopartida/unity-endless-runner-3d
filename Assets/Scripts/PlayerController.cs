@@ -4,9 +4,8 @@ using System.Collections;
 public class PlayerController : MonoBehaviour {
     public float m_movSpeed;
 	private Rigidbody rb;
-    private Vector3 m_velocity;
-    
-	private float currentPosition = 0;
+	private Vector3 m_velocity;
+	public Transform lastPiece;
     
 	private float hAccValue = 0.3f; //if windows = 0.
 	private enum Movements { LEFT, RIGHT, NONE};
@@ -15,14 +14,16 @@ public class PlayerController : MonoBehaviour {
 	private float delayBetweenMovements;
 	private float timeBetweenMovements = 0.5f;
 	private float timeBetweenRepeatedMovements = 1f;
-	private bool movingVertical = true;
-
+	public bool movingVertical;
+	public float centerFactor;
+	public float step  = 10f;
     public void RotateRight(){
         rotate (true);
     }
     public void RotateLeft(){
         rotate (false);
     }
+	public int facing = 0; //starts facing forward +Z
     private void rotate(bool right){
 		movingVertical = !movingVertical;
         GameObject player = GameObject.Find ("Player");
@@ -31,6 +32,7 @@ public class PlayerController : MonoBehaviour {
 
         //velocity = new Vector3 (movSpeed, 0.0f, 0f);
 		if (right) {
+			facing++;
             if(m_velocity.x > 0){
                 //Traveling through +X. Turning to the Right. -Z
                 m_velocity = new Vector3 (0f, 0f, -m_movSpeed);
@@ -46,6 +48,7 @@ public class PlayerController : MonoBehaviour {
             }
             //TODO: Travel through Y ?
 		} else {
+			facing--;
             if(m_velocity.x > 0){
                 //Traveling through +X. Turning to the LEFT. -Z
                 m_velocity = new Vector3 (0f, 0f, +m_movSpeed);
@@ -61,6 +64,10 @@ public class PlayerController : MonoBehaviour {
             }
             //TODO: Travel through Y ?
         }
+		if(facing < 0){
+			facing += 4; // -1 + 4 = 3 = LEFT
+		}
+		facing = Mathf.Abs( facing % 4); // 1 = 5 = 7 = Going right
 
         float angle = (right ? 90 : -90);
         //player.transform.RotateAround(player.transform.position, new Vector3(0, 1, 0), angle);
@@ -69,16 +76,16 @@ public class PlayerController : MonoBehaviour {
         rb.velocity =  new Vector3(0,0,0);
         rb.AddForce(m_velocity);
 		recenter();
-    }
+	}
+	private const int FRONT = 0, RIGHT = 1, BACK = 2, LEFT = 3;
     // Use this for initialization
     void Start () {
         rb = GetComponent<Rigidbody> ();
         m_velocity = new Vector3 (0f, 0.0f, m_movSpeed);
         rb.AddForce(m_velocity);
 	}
-	Transform lastPiece;
 
-	private void recenter(){
+	public void recenter(){
 		if(lastPiece == null){
 			return;
 		}
@@ -86,35 +93,46 @@ public class PlayerController : MonoBehaviour {
 
 		Collider lastPieceCollider = lastPiece.GetComponent<Collider>();
 //		lastPiece.gameObject.SetActive(false);
-		float sizeX = lastPieceCollider.bounds.size.x;
-		float sizeY = lastPieceCollider.bounds.size.y;
-		float sizeZ = lastPieceCollider.bounds.size.z;
+//		float sizeX = lastPieceCollider.bounds.size.x;
+//		float sizeY = lastPieceCollider.bounds.size.y;
+//		float sizeZ = lastPieceCollider.bounds.size.z;
 
 //		float diffX = sizeX / 4;
+		Transform center = lastPiece.transform.Find ("center");
 
-		Vector3 position = lastPiece.position - new Vector3(sizeX/2, 0, 0);
-		float positionX = (position.x);
-
-		transform.position = new Vector3(positionX, transform.position.y, transform.position.z);
-		
+//		transform.position = new Vector3(positionX, transform.position.y, transform.position.z);
+		Vector3 position = center.position;
 		//TODO: This is just for X
 		if(movingVertical){
-//			float positionX = position.x;
-//			transform.position = new Vector3(positionX, transform.position.y, transform.position.z);
+//			position= lastPiece.position - new Vector3(sizeX * centerFactor, 0, 0);
+			float positionX = position.x + (centerFactor * ( facing == PlayerController.FRONT ? 1:-1 )) ;
+//			float positionX = (position.x)/2;
+			transform.position = new Vector3(positionX , transform.position.y, transform.position.z);
 		} else { //Moving Horizontal
+//			position = lastPiece.position - new Vector3(0, 0, sizeZ * centerFactor);
 //			position = lastPiece.position - new Vector3( sizeX/2, sizeY, sizeZ/2);
-//			float positionZ = position.z;
-//			transform.position = new Vector3(transform.position.x, transform.position.y, positionZ);
+			float positionZ = position.z + (centerFactor * ( facing == PlayerController.LEFT ? 1:-1 )) ;
+			transform.position = new Vector3(transform.position.x, transform.position.y, positionZ);
 		}
-		string positionStr = position.ToString();
-		DebugScript.self.addText("Size: (" + sizeX + ", "+sizeY+", "+sizeZ+") " + positionStr);
+//		string positionStr = position.ToString();
+//		DebugScript.self.addText("Size: (" + sizeX + ", "+sizeY+", "+sizeZ+") " + positionStr);
 
 	}
-	void OnCollisionEnter(Collision collision){
-		DebugScript.self.addText("COLLISION: " + collision.transform.tag);
-		if(collision.transform.tag == "PIECE"){
-			lastPiece = collision.transform;
-			recenter();
+	public int pieces = 0;
+	void OnTriggerEnter(Collider collider){
+		DebugScript.self.addText("COLLISION: " + collider.transform.tag);
+		if(collider.transform.tag == "PIECE"){
+			if(lastPiece != null){
+
+				Destroy (lastPiece.gameObject);
+			}
+			lastPiece = collider.transform;
+			collider.enabled = false;
+//			lastPiece.gameObject.SetActive(false);
+			pieces++;
+			if(pieces < 2){
+				recenter (); //Recenter in the first w/o turn.
+			}
 		}
 	}
 //    void FixedUpdate(){
@@ -122,7 +140,11 @@ public class PlayerController : MonoBehaviour {
 //    }
     // Update is called once per frame
 	void Update () {
-		recenter ();
+//		recenter();
+//		if(pieces >3 ) {
+//			recenter();
+//			rb.velocity = new Vector3(0,0,0);
+//		}
         if(Time.time > delayBetweenMovements){
             //if WINDOWS
             //If Android-iPhone
@@ -137,29 +159,24 @@ public class PlayerController : MonoBehaviour {
 			if (buttonHorizontal) {
 				Movements actualMovement = Movements.NONE;
 				float diff = 0;
-				if (horizontalAxis < hAccValue && currentPosition >= 0) {
+				if (horizontalAxis < hAccValue && centerFactor > -step) {
 					//To the left
 					actualMovement = Movements.LEFT;
-					diff = -10f;
+					diff = -step;
 					DebugScript.self.addText("MOVE_LEFT");
-				} else if (horizontalAxis > hAccValue && currentPosition <= 0) {
+				} else if (horizontalAxis > hAccValue && centerFactor < step) {
 					//To the right
 					actualMovement = Movements.RIGHT;
-					diff = +10f;
+					diff = step;
 					DebugScript.self.addText("MOVE_RIGHT");
 				}
 				//Using delay
 				if(actualMovement != lastMovement || Time.time >= delayRepeatedMovements && actualMovement == lastMovement){
-					currentPosition += diff;
-					//					transform.Translate(currentPosition * Time.smoothDeltaTime, 0, 0);
-//					transform.Translate(-Vector3.right * diff * Time.deltaTime);
-//					transform.position = new Vector3 (currentPosition, transform.position.y, transform.position.z);
-
-					transform.position = transform.position + Vector3.right * diff;
-					currentPosition = 0; //TODO remove this line.
+					centerFactor += diff;
 					delayRepeatedMovements = Time.time + timeBetweenRepeatedMovements;
 					delayBetweenMovements = Time.time + timeBetweenMovements;
 					lastMovement = actualMovement;
+					recenter ();
 				}
 			} else {
 				delayRepeatedMovements = 0;
